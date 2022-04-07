@@ -73,6 +73,7 @@ def eval(test_data, model):
 	pred_list = np.array(pred_list)
 	label_list = np.array(label_list)
 
+	#From https://github.com/QData/DeepDiffChrome
 	R2,p=scipy.stats.pearsonr(label_list, pred_list)
 	MSE=metrics.mean_squared_error(label_list, pred_list)
 	return MSE, R2, p
