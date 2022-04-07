@@ -39,6 +39,9 @@ class HisModDataset(torch.utils.data.Dataset):
 		tensorA = self.cellA_tensor[idx:idx+self.offset]
 		tensorB = self.cellB_tensor[idx:idx+self.offset]
 
+		tensorA = torch.transpose(tensorA, 0, 1)
+		tensorB = torch.transpose(tensorB, 0, 1)
+
 		geneA = self.geneA_names[idx*self.offset].split("_")[0]
 		geneB = self.geneB_names[idx*self.offset].split("_")[0]
 
