@@ -6,7 +6,7 @@ import torch.nn as nn
 
 MAIN_DIR = "./ProcessedData/"
 
-def train(hmnet, train_loader, epoch = 10):
+def train(hmnet, train_loader, epoch = 1):
 	optim = torch.optim.Adam(hmnet.parameters(), amsgrad=True)
 
 	torch.set_grad_enabled(True)
@@ -34,7 +34,7 @@ def train(hmnet, train_loader, epoch = 10):
 			optim.step()
 			optim.zero_grad()
 
-			print("loss:", out.item())
+			#print("loss:", out.item())
 
 	print("finished training")
 

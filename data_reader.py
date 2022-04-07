@@ -11,43 +11,56 @@ MAIN_DIR = "./ProcessedData/"
 
 class HisModDataset(torch.utils.data.Dataset):
 	def __init__(self, cellA_file, cellA_expr_file, cellB_file, cellB_expr_file, main_dir):
-		cell_cols = ["A", "B", "C", "D", "E", "F"]
-		expr_cols = ["A", "B"]
+		cell_cols = ["A", "B", "C", "D", "E", "F"] #dummy cols
+		expr_cols = ["A", "B"] #dummy cols 
+
+		#read in data into dataframes
 		cellA_df = pd.read_csv(main_dir + cellA_file, names=cell_cols)
 		cellB_df = pd.read_csv(main_dir + cellB_file, names=cell_cols)
 		cellA_expr_df = pd.read_csv(main_dir + cellA_expr_file, names=expr_cols)
 		cellB_expr_df = pd.read_csv(main_dir + cellB_expr_file, names=expr_cols)
 
-
+		#200 entries per gene
 		self.offset = 200
 		self.length = len(cellA_df)//self.offset
 		
-
+		#all cols except one with gene info
 		hm_cols = ["B", "C", "D", "E", "F"]
 
+		#convert to tensor
 		self.cellA_tensor = torch.tensor(cellA_df[hm_cols].values)
 		self.cellB_tensor = torch.tensor(cellB_df[hm_cols].values)
 
+		#using expr file, maps gene id -> expr value
 		self.gene_to_valA = dict(zip(cellA_expr_df.A, cellA_expr_df.B))
 		self.gene_to_valB = dict(zip(cellB_expr_df.A, cellB_expr_df.B))
 
+		#extract gene info col from the train/test/val data
 		self.geneA_names = cellA_df["A"]
 		self.geneB_names = cellB_df["A"]
 
 	def __getitem__(self, idx):
 
+		#find the relevant slice of the tensor based on the id
 		tensorA = self.cellA_tensor[idx:idx+self.offset]
 		tensorB = self.cellB_tensor[idx:idx+self.offset]
 
+		#transpose b/c data is initially 200x5
 		tensorA = torch.transpose(tensorA, 0, 1)
 		tensorB = torch.transpose(tensorB, 0, 1)
 
+		#just takes the first gene window id corresponding to the 
+		#group of 200 and uses it to find the gene id
 		geneA = self.geneA_names[idx*self.offset].split("_")[0]
 		geneB = self.geneB_names[idx*self.offset].split("_")[0]
 
+		#print(geneA); print(geneB) #<-- should be the same
+
+		#Get the expression values for cell A and cell B
 		cA = self.gene_to_valA[geneA]
 		cB = self.gene_to_valB[geneB]
 
+		#Find the log-fold change
 		label = self.getlabel(cA, cB) 
 
 		return tensorA, tensorB, label[0]
