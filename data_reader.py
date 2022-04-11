@@ -43,6 +43,8 @@ class HisModDataset(torch.utils.data.Dataset):
 
 	def __getitem__(self, idx):
 
+		idx = idx*self.offset
+
 		#find the relevant slice of the tensor based on the id
 		tensorA = self.cellA_tensor[idx:idx+self.offset]
 		tensorB = self.cellB_tensor[idx:idx+self.offset]
@@ -53,8 +55,8 @@ class HisModDataset(torch.utils.data.Dataset):
 
 		#just takes the first gene window id corresponding to the 
 		#group of 200 and uses it to find the gene id
-		geneA = self.geneA_names[idx*self.offset].split("_")[0]
-		geneB = self.geneB_names[idx*self.offset].split("_")[0]
+		geneA = self.geneA_names[idx].split("_")[0]
+		geneB = self.geneB_names[idx].split("_")[0]
 
 		#print(geneA); print(geneB) #<-- should be the same
 

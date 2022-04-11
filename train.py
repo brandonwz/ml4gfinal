@@ -99,7 +99,7 @@ def graph_results(pccs):
 	plt.plot(ticks, pccs, linestyle='dashed', marker='o')
 	plt.ylabel("Pearson Correlation Coefficient")
 	plt.xlabel("Cell Pairs")
-	plt.ylim(-0.1, 1)
+	plt.ylim(0, 1)
 	#plt.title("Results for Simple Convolutional Net")
 	plt.show()
 
@@ -118,10 +118,9 @@ if __name__ == '__main__':
 	["E037", "E038"]
 	]
 
-	pccs = [0.037, 0.005, 0.008, 0.014, -0.004, 0.006, -0.01, -0.022, -0.022, -0.007]
+	pccs = [0.505, 0.555, 0.493, 0.396, 0.170, 0.393, 0.326, 0.278, 0.270, 0.135]
 
 	graph_results(pccs)
-
 '''
 	for cell_pair in cell_pairs:
 		print("=======CELL PAIR: " + str(cell_pair) + "========")
@@ -155,6 +154,5 @@ if __name__ == '__main__':
 
 		MSE, R2, p = eval(dataloader, hmnet)
 		print("eval on test set: ", MSE, R2, p)
-	'''
-
+'''
 	
