@@ -9,9 +9,11 @@ from sklearn import metrics
 
 import numpy as np
 
+import matplotlib.pyplot as plt
+
 MAIN_DIR = "./ProcessedData/"
 
-def train(hmnet, train_loader, epoch = 5, train_lin = False):
+def train(hmnet, train_loader, epoch = 25, train_lin = False):
 	optim = torch.optim.Adam(hmnet.parameters(), amsgrad=True)
 
 
@@ -78,38 +80,81 @@ def eval(test_data, model):
 	MSE=metrics.mean_squared_error(label_list, pred_list)
 	return MSE, R2, p
 
+def graph_results(pccs):
+	labels = ["E123-E003", 
+	"E116-E003", 
+	"E123-E116", 
+	"E003-E005", 
+	"E003-E006",
+	"E006-E007",
+	"E005-E006",
+	"E003-E004",
+	"E004-E006",
+	"E037-E038"]
 
+	ticks = np.arange(10) + 1
+
+	plt.figure()
+	plt.xticks(ticks, labels, rotation = 45)
+	plt.plot(ticks, pccs, linestyle='dashed', marker='o')
+	plt.ylabel("Pearson Correlation Coefficient")
+	plt.xlabel("Cell Pairs")
+	plt.ylim(-0.1, 1)
+	#plt.title("Results for Simple Convolutional Net")
+	plt.show()
 
 
 if __name__ == '__main__':
-	cellA_expr_file = "E123.expr.csv"
-	cellA_file = "E123.train.csv"
-	cellB_file = "E003.train.csv"
-	cellB_expr_file = "E003.expr.csv"
+	cell_pairs = [
+	["E123", "E003"],
+	["E116", "E003"],
+	["E123", "E116"],
+	["E003", "E005"],
+	["E003", "E006"],
+	["E006", "E007"],
+	["E005", "E006"],
+	["E003", "E004"],
+	["E004", "E006"],
+	["E037", "E038"]
+	]
 
-	hmnet = HMNet()
+	pccs = [0.037, 0.005, 0.008, 0.014, -0.004, 0.006, -0.01, -0.022, -0.022, -0.007]
 
-	print("loading data...")
-	dataset = HisModDataset(cellA_file, cellA_expr_file, cellB_file, cellB_expr_file, MAIN_DIR, use_lin = False)
-	print("data loaded!")
+	graph_results(pccs)
 
-	dataloader = torch.utils.data.DataLoader(dataset)
+'''
+	for cell_pair in cell_pairs:
+		print("=======CELL PAIR: " + str(cell_pair) + "========")
+		cellA_expr_file = cell_pair[0] + ".expr.csv"
+		cellA_file = cell_pair[0] + ".train.csv"
+		cellB_file = cell_pair[1] + ".train.csv"
+		cellB_expr_file = cell_pair[1] + ".expr.csv"
 
-	hmnet = train(hmnet, dataloader, train_lin = False)
+		hmnet = HMNet()
 
-	MSE, R2, p = eval(dataloader, hmnet)
-	print(MSE, R2, p)
+		print("loading data...")
+		dataset = HisModDataset(cellA_file, cellA_expr_file, cellB_file, cellB_expr_file, MAIN_DIR, use_lin = False)
+		print("data loaded!")
 
-	cellA_expr_file = "E123.expr.csv"
-	cellA_file = "E123.test.csv"
-	cellB_file = "E003.test.csv"
-	cellB_expr_file = "E003.expr.csv"
+		dataloader = torch.utils.data.DataLoader(dataset)
 
-	dataset = HisModDataset(cellA_file, cellA_expr_file, cellB_file, cellB_expr_file, MAIN_DIR, use_lin = False)
+		hmnet = train(hmnet, dataloader, train_lin = False)
 
-	dataloader = torch.utils.data.DataLoader(dataset)
+		MSE, R2, p = eval(dataloader, hmnet)
+		print("eval on train set:", MSE, R2, p)
 
-	MSE, R2, p = eval(dataloader, hmnet)
-	print(MSE, R2, p)
+		cellA_expr_file = cell_pair[0] + ".expr.csv"
+		cellA_file = cell_pair[0] + ".test.csv"
+		cellB_file = cell_pair[1] + ".test.csv"
+		cellB_expr_file = cell_pair[1] + ".expr.csv"
+
+		dataset = HisModDataset(cellA_file, cellA_expr_file, cellB_file, cellB_expr_file, MAIN_DIR, use_lin = False)
+
+		dataloader = torch.utils.data.DataLoader(dataset)
+
+
+		MSE, R2, p = eval(dataloader, hmnet)
+		print("eval on test set: ", MSE, R2, p)
+	'''
 
 	
