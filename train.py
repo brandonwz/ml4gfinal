@@ -14,12 +14,16 @@ import matplotlib.pyplot as plt
 
 MAIN_DIR = "./ProcessedData/"
 
-def train(hmnet, train_loader, epoch = 25, train_lin = False):
+def train(hmnet, train_loader, val_loader, checkpoint_name = "", epoch = 25):
 	optim = torch.optim.Adam(hmnet.parameters(), amsgrad=True)
 
 
-	if(train_lin):
-		optim = torch.optim.SGD(hmnet.parameters(), lr=0.0001)
+	# if(train_lin):
+	# 	optim = torch.optim.SGD(hmnet.parameters(), lr=0.0001)
+
+	checkpoint = "./checkpoints/" + checkpoint_name
+
+	min_val_mse = float('inf')
 
 	torch.set_grad_enabled(True)
 	hmnet.train()
@@ -49,16 +53,26 @@ def train(hmnet, train_loader, epoch = 25, train_lin = False):
 			optim.step()
 			optim.zero_grad()
 
-			#print("loss:", out.item())
-			# if c == 3:
-			# 	break
-			# c+=1
+		mse, r2, _ = eval(val_loader, hmnet)
+		print("epoch:", (i+1))
+		print("val mse:", mse)
+		print("val pcc:", r2)
+
+		if(mse < min_val_mse):
+			min_val_mse = mse
+			torch.save(hmnet.state_dict(), checkpoint)
+
+		torch.set_grad_enabled(True)
+		hmnet.train()	
 
 	print("finished training")
+
+	hmnet.load_state_dict(torch.load(checkpoint))
 
 	return hmnet
 
 def eval(test_data, model):
+	torch.set_grad_enabled(False)
 	model.eval()
 	pred_list = []; label_list = []
 	for x1, x2, y in test_data:
@@ -121,8 +135,10 @@ if __name__ == '__main__':
 
 	pccs = [0.505, 0.555, 0.493, 0.396, 0.170, 0.393, 0.326, 0.278, 0.270, 0.135]
 
-	graph_results(pccs)
-'''
+	#graph_results(pccs)
+
+	TRIAL_NAME = "simple_cnn_1"
+
 	for cell_pair in cell_pairs:
 		print("=======CELL PAIR: " + str(cell_pair) + "========")
 		cellA_expr_file = cell_pair[0] + ".expr.csv"
@@ -130,15 +146,20 @@ if __name__ == '__main__':
 		cellB_file = cell_pair[1] + ".train.csv"
 		cellB_expr_file = cell_pair[1] + ".expr.csv"
 
+		cellA_val = cell_pair[0] + ".valid.csv"
+		cellB_val = cell_pair[1] + ".valid.csv"
+
 		hmnet = HMNet()
 
 		print("loading data...")
 		dataset = HisModDataset(cellA_file, cellA_expr_file, cellB_file, cellB_expr_file, MAIN_DIR, use_lin = False)
+		val_data = HisModDataset(cellA_val, cellA_expr_file, cellB_val, cellB_expr_file, MAIN_DIR, use_lin = False)
 		print("data loaded!")
 
 		dataloader = torch.utils.data.DataLoader(dataset)
+		val_loader = torch.utils.data.DataLoader(val_data)
 
-		hmnet = train(hmnet, dataloader, train_lin = False)
+		hmnet = train(hmnet, dataloader, val_loader = val_loader, checkpoint_name = TRIAL_NAME)
 
 		MSE, R2, p = eval(dataloader, hmnet)
 		print("eval on train set:", MSE, R2, p)
@@ -155,5 +176,7 @@ if __name__ == '__main__':
 
 		MSE, R2, p = eval(dataloader, hmnet)
 		print("eval on test set: ", MSE, R2, p)
-'''
+
+		break
+
 	
