@@ -3,6 +3,7 @@ from data_reader import HisModDataset
 
 import torch
 import torch.nn as nn
+#print(torch.__version__)
 
 import scipy
 from sklearn import metrics
@@ -11,6 +12,15 @@ from sklearn import metrics
 import numpy as np
 
 import matplotlib.pyplot as plt
+
+print("====== GPU Info ======")
+
+print("cuda available:", torch.cuda.is_available())
+
+DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+print("device:", DEVICE)
+
+print("======================")
 
 MAIN_DIR = "./ProcessedData/"
 
@@ -32,10 +42,14 @@ def train(hmnet, train_loader, val_loader, checkpoint_name = "", epoch = 25):
 	c = 0
 	for i in range(epoch):
 		for x1, x2, y in train_loader:
+
+			x1 = x1.to(DEVICE)
+			x2 = x2.to(DEVICE)
+			y = y.to(DEVICE)
+
 			input_mat = x1 - x2
 			input_mat = input_mat.float()
 			#print(input_mat)
-			#print("itr")
 			pred = hmnet(input_mat)
 			#print(pred)
 			pred = pred.squeeze()
@@ -44,6 +58,7 @@ def train(hmnet, train_loader, val_loader, checkpoint_name = "", epoch = 25):
 
 			y = y.float()
 			y = y.squeeze()
+
 
 			#print(y); print(pred)
 			out = loss(pred, y)
@@ -76,6 +91,11 @@ def eval(test_data, model):
 	model.eval()
 	pred_list = []; label_list = []
 	for x1, x2, y in test_data:
+
+		x1 = x1.to(DEVICE)
+		x2 = x2.to(DEVICE)
+		y = y.to(DEVICE)
+
 		input_mat = x1 - x2
 		input_mat = input_mat.float()
 
@@ -150,6 +170,7 @@ if __name__ == '__main__':
 		cellB_val = cell_pair[1] + ".valid.csv"
 
 		hmnet = HMNet()
+		hmnet = hmnet.to(DEVICE)
 
 		print("loading data...")
 		dataset = HisModDataset(cellA_file, cellA_expr_file, cellB_file, cellB_expr_file, MAIN_DIR, use_lin = False)
