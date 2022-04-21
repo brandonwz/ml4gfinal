@@ -30,9 +30,9 @@ class ConvTransNet(nn.Module):
 
 		self.conv_net = nn.Sequential(
 			nn.Conv1d(5, 32, 5), #of histone mods, # of output channels, kernel size
-			nn.ReLU(0.2),
+			nn.LeakyReLU(0.2i),
 			nn.Conv1d(32, 64, 5),
-			nn.ReLU(0.2),
+			nn.LeakyReLU(0.2),
 			nn.Conv1d(64, 5, 5),
 		)
 
