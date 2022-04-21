@@ -35,7 +35,7 @@ def train(hmnet, train_loader, val_loader, checkpoint_name = "", epoch = 25):
 			input_mat = x1 - x2
 			input_mat = input_mat.float()
 			#print(input_mat)
-
+			#print("itr")
 			pred = hmnet(input_mat)
 			#print(pred)
 			pred = pred.squeeze()
@@ -137,7 +137,7 @@ if __name__ == '__main__':
 
 	#graph_results(pccs)
 
-	TRIAL_NAME = "simple_cnn_1"
+	TRIAL_NAME = "transformer"
 
 	for cell_pair in cell_pairs:
 		print("=======CELL PAIR: " + str(cell_pair) + "========")
