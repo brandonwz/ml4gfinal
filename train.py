@@ -1,4 +1,4 @@
-from hmnet import HMNet, LinearRegression
+from hmnet import HMNet, LinearRegression, BetterConvNet, SimpleConvNet, TransformerNoConv
 from data_reader import HisModDataset
 
 import torch
@@ -24,7 +24,7 @@ print("======================")
 
 MAIN_DIR = "./ProcessedData/"
 
-def train(hmnet, train_loader, val_loader, checkpoint_name = "", epoch = 25):
+def train(hmnet, train_loader, val_loader, checkpoint_name = "", epoch = 10):
 	optim = torch.optim.Adam(hmnet.parameters(), amsgrad=True)
 
 
@@ -157,9 +157,10 @@ if __name__ == '__main__':
 
 	#graph_results(pccs)
 
-	TRIAL_NAME = "transformer"
+	TRIAL_NAME = "simple_transformer_1"
 
 	for cell_pair in cell_pairs:
+		TRIAL_NAME = TRIAL_NAME + "_" + cell_pair[0] + "_" + cell_pair[1]
 		print("=======CELL PAIR: " + str(cell_pair) + "========")
 		cellA_expr_file = cell_pair[0] + ".expr.csv"
 		cellA_file = cell_pair[0] + ".train.csv"
@@ -169,7 +170,7 @@ if __name__ == '__main__':
 		cellA_val = cell_pair[0] + ".valid.csv"
 		cellB_val = cell_pair[1] + ".valid.csv"
 
-		hmnet = HMNet()
+		hmnet = TransformerNoConv()#HMNet()
 		hmnet = hmnet.to(DEVICE)
 
 		print("loading data...")
