@@ -10,7 +10,7 @@ import math
 MAIN_DIR = "./ProcessedData/"
 
 class HisModDataset(torch.utils.data.Dataset):
-	def __init__(self, cellA_file, cellA_expr_file, cellB_file, cellB_expr_file, main_dir, use_lin=False):
+	def __init__(self, cellA_file, cellA_expr_file, cellB_file, cellB_expr_file, main_dir, ignore_B=False):
 		cell_cols = ["A", "B", "C", "D", "E", "F"] #dummy cols
 		expr_cols = ["A", "B"] #dummy cols 
 
@@ -39,7 +39,7 @@ class HisModDataset(torch.utils.data.Dataset):
 		self.geneA_names = cellA_df["A"]
 		self.geneB_names = cellB_df["A"]
 
-		self.use_lin = use_lin
+		self.ignore_B = ignore_B
 
 	def __getitem__(self, idx):
 
@@ -64,12 +64,15 @@ class HisModDataset(torch.utils.data.Dataset):
 		cA = self.gene_to_valA[geneA]
 		cB = self.gene_to_valB[geneB]
 
+		if(self.ignore_B):
+			return tensorA, tensorB, cA
+
 		#Find the log-fold change
 		label = self.getlabel(cA, cB) 
 
-		if(self.use_lin):
-			tensorA = tensorA.reshape(1, 1000)
-			tensorB = tensorB.reshape(1, 1000)
+		# if(self.use_lin):
+		# 	tensorA = tensorA.reshape(1, 1000)
+		# 	tensorB = tensorB.reshape(1, 1000)
 
 		return tensorA, tensorB, label[0]
 
