@@ -13,6 +13,8 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 
+import os, sys
+
 print("====== GPU Info ======")
 
 print("cuda available:", torch.cuda.is_available())
@@ -24,7 +26,7 @@ print("======================")
 
 MAIN_DIR = "./ProcessedData/"
 
-def train(hmnet, train_loader, val_loader, checkpoint_name = "", epoch = 10):
+def train(hmnet, train_loader, val_loader, checkpoint_name = "", epoch = 15):
 	optim = torch.optim.Adam(hmnet.parameters(), amsgrad=True)
 
 
@@ -158,9 +160,18 @@ if __name__ == '__main__':
 	#graph_results(pccs)
 
 	TRIAL_NAME = "simple_transformer_1"
+	TRIAL_DIR = "./checkpoints/" + TRIAL_NAME
+
+	if(os.path.exists(TRIAL_DIR)):
+		print("Error: trial already exists. Please choose a different name.")
+		sys.exit()
+	else:
+		os.makedirs(TRIAL_DIR)
+
 
 	for cell_pair in cell_pairs:
-		TRIAL_NAME = TRIAL_NAME + "_" + cell_pair[0] + "_" + cell_pair[1]
+		TRIAL_PAIR_NAME = TRIAL_NAME + "_" + cell_pair[0] + "_" + cell_pair[1]
+		TRIAL_SAVE = TRIAL_NAME + "/" + TRIAL_PAIR_NAME
 		print("=======CELL PAIR: " + str(cell_pair) + "========")
 		cellA_expr_file = cell_pair[0] + ".expr.csv"
 		cellA_file = cell_pair[0] + ".train.csv"
@@ -174,14 +185,14 @@ if __name__ == '__main__':
 		hmnet = hmnet.to(DEVICE)
 
 		print("loading data...")
-		dataset = HisModDataset(cellA_file, cellA_expr_file, cellB_file, cellB_expr_file, MAIN_DIR, use_lin = False)
-		val_data = HisModDataset(cellA_val, cellA_expr_file, cellB_val, cellB_expr_file, MAIN_DIR, use_lin = False)
+		dataset = HisModDataset(cellA_file, cellA_expr_file, cellB_file, cellB_expr_file, MAIN_DIR, ignore_B = False)
+		val_data = HisModDataset(cellA_val, cellA_expr_file, cellB_val, cellB_expr_file, MAIN_DIR, ignore_B = False)
 		print("data loaded!")
 
 		dataloader = torch.utils.data.DataLoader(dataset)
 		val_loader = torch.utils.data.DataLoader(val_data)
 
-		hmnet = train(hmnet, dataloader, val_loader = val_loader, checkpoint_name = TRIAL_NAME)
+		hmnet = train(hmnet, dataloader, val_loader = val_loader, checkpoint_name = TRIAL_SAVE)
 
 		MSE, R2, p = eval(dataloader, hmnet)
 		print("eval on train set:", MSE, R2, p)
@@ -191,7 +202,7 @@ if __name__ == '__main__':
 		cellB_file = cell_pair[1] + ".test.csv"
 		cellB_expr_file = cell_pair[1] + ".expr.csv"
 
-		dataset = HisModDataset(cellA_file, cellA_expr_file, cellB_file, cellB_expr_file, MAIN_DIR, use_lin = False)
+		dataset = HisModDataset(cellA_file, cellA_expr_file, cellB_file, cellB_expr_file, MAIN_DIR, ignore_B = False)
 
 		dataloader = torch.utils.data.DataLoader(dataset)
 
