@@ -1,19 +1,20 @@
-from hmnet import HMNet, LinearRegression, BetterConvNet, SimpleConvNet, TransformerNoConv
+from hmnet import ConvTransNet, TransConvNet, BetterConvNet, SimpleConvNet, TransformerNoConv
 from data_reader import HisModDataset
 
 import torch
 import torch.nn as nn
-#print(torch.__version__)
 
 import scipy
 from sklearn import metrics
 
-#HELLO!!!!
 import numpy as np
 
 import matplotlib.pyplot as plt
 
 import os, sys
+
+TRIAL_NAME = "trans_conv_1"
+TRIAL_DIR = "./checkpoints/" + TRIAL_NAME
 
 print("====== GPU Info ======")
 
@@ -26,12 +27,15 @@ print("======================")
 
 MAIN_DIR = "./ProcessedData/"
 
-def train(hmnet, train_loader, val_loader, checkpoint_name = "", epoch = 15):
+def train(
+	hmnet, 
+	train_loader, 
+	val_loader, 
+	checkpoint_name = "", 
+	epoch = 10
+	):
+
 	optim = torch.optim.Adam(hmnet.parameters(), amsgrad=True)
-
-
-	# if(train_lin):
-	# 	optim = torch.optim.SGD(hmnet.parameters(), lr=0.0001)
 
 	checkpoint = "./checkpoints/" + checkpoint_name
 
@@ -51,9 +55,7 @@ def train(hmnet, train_loader, val_loader, checkpoint_name = "", epoch = 15):
 
 			input_mat = x1 - x2
 			input_mat = input_mat.float()
-			#print(input_mat)
 			pred = hmnet(input_mat)
-			#print(pred)
 			pred = pred.squeeze()
 
 			loss = nn.MSELoss()
@@ -61,8 +63,6 @@ def train(hmnet, train_loader, val_loader, checkpoint_name = "", epoch = 15):
 			y = y.float()
 			y = y.squeeze()
 
-
-			#print(y); print(pred)
 			out = loss(pred, y)
 
 			out.backward()
@@ -137,7 +137,6 @@ def graph_results(pccs):
 	plt.ylabel("Pearson Correlation Coefficient")
 	plt.xlabel("Cell Pairs")
 	plt.ylim(0, 1)
-	#plt.title("Results for Simple Convolutional Net")
 	plt.show()
 
 
@@ -155,12 +154,13 @@ if __name__ == '__main__':
 	["E037", "E038"]
 	]
 
-	pccs = [0.505, 0.555, 0.493, 0.396, 0.170, 0.393, 0.326, 0.278, 0.270, 0.135]
+	simple_conv_pccs = [0.505, 0.555, 0.493, 0.396, 0.170, 0.393, 0.326, 0.278, 0.270, 0.135]
+	conv_trans_pccs = [] #TODO
+	transformer_pccs = [] #TODO
+	better_conv_pccs = [] #TODO
+	single_net_pccs = [] #TODO
 
-	#graph_results(pccs)
-
-	TRIAL_NAME = "simple_transformer_1"
-	TRIAL_DIR = "./checkpoints/" + TRIAL_NAME
+	#graph_results(simple_conv_pccs)
 
 	if(os.path.exists(TRIAL_DIR)):
 		print("Error: trial already exists. Please choose a different name.")
@@ -168,11 +168,12 @@ if __name__ == '__main__':
 	else:
 		os.makedirs(TRIAL_DIR)
 
-
 	for cell_pair in cell_pairs:
 		TRIAL_PAIR_NAME = TRIAL_NAME + "_" + cell_pair[0] + "_" + cell_pair[1]
 		TRIAL_SAVE = TRIAL_NAME + "/" + TRIAL_PAIR_NAME
+		
 		print("=======CELL PAIR: " + str(cell_pair) + "========")
+		
 		cellA_expr_file = cell_pair[0] + ".expr.csv"
 		cellA_file = cell_pair[0] + ".train.csv"
 		cellB_file = cell_pair[1] + ".train.csv"
@@ -181,12 +182,29 @@ if __name__ == '__main__':
 		cellA_val = cell_pair[0] + ".valid.csv"
 		cellB_val = cell_pair[1] + ".valid.csv"
 
-		hmnet = TransformerNoConv()#HMNet()
+		hmnet = TransConvNet()
 		hmnet = hmnet.to(DEVICE)
 
 		print("loading data...")
-		dataset = HisModDataset(cellA_file, cellA_expr_file, cellB_file, cellB_expr_file, MAIN_DIR, ignore_B = False)
-		val_data = HisModDataset(cellA_val, cellA_expr_file, cellB_val, cellB_expr_file, MAIN_DIR, ignore_B = False)
+
+		dataset = HisModDataset(
+			cellA_file, 
+			cellA_expr_file, 
+			cellB_file, 
+			cellB_expr_file, 
+			MAIN_DIR, 
+			ignore_B = False
+		)
+		
+		val_data = HisModDataset(
+			cellA_val, 
+			cellA_expr_file, 
+			cellB_val, 
+			cellB_expr_file, 
+			MAIN_DIR, 
+			ignore_B = False
+		)
+
 		print("data loaded!")
 
 		dataloader = torch.utils.data.DataLoader(dataset)
@@ -202,7 +220,14 @@ if __name__ == '__main__':
 		cellB_file = cell_pair[1] + ".test.csv"
 		cellB_expr_file = cell_pair[1] + ".expr.csv"
 
-		dataset = HisModDataset(cellA_file, cellA_expr_file, cellB_file, cellB_expr_file, MAIN_DIR, ignore_B = False)
+		dataset = HisModDataset(
+			cellA_file, 
+			cellA_expr_file, 
+			cellB_file, 
+			cellB_expr_file, 
+			MAIN_DIR, 
+			ignore_B = False
+		)
 
 		dataloader = torch.utils.data.DataLoader(dataset)
 

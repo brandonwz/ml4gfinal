@@ -10,7 +10,17 @@ import math
 MAIN_DIR = "./ProcessedData/"
 
 class HisModDataset(torch.utils.data.Dataset):
-	def __init__(self, cellA_file, cellA_expr_file, cellB_file, cellB_expr_file, main_dir, ignore_B=False):
+	def __init__(
+		self, 
+		cellA_file, 
+		cellA_expr_file, 
+		cellB_file, 
+		cellB_expr_file, 
+		main_dir, 
+		ignore_B=False,
+		shuffle_cols = False #experimental
+		):
+
 		cell_cols = ["A", "B", "C", "D", "E", "F"] #dummy cols
 		expr_cols = ["A", "B"] #dummy cols 
 
@@ -40,6 +50,7 @@ class HisModDataset(torch.utils.data.Dataset):
 		self.geneB_names = cellB_df["A"]
 
 		self.ignore_B = ignore_B
+		self.shuffle_cols = shuffle_cols
 
 	def __getitem__(self, idx):
 
@@ -52,6 +63,10 @@ class HisModDataset(torch.utils.data.Dataset):
 		#transpose b/c data is initially 200x5
 		tensorA = torch.transpose(tensorA, 0, 1)
 		tensorB = torch.transpose(tensorB, 0, 1)
+
+		if(self.shuffle_cols): #experimental
+			tensorA = tensorA[:, torch.randperm(tensorA.size()[1])]
+			tensorB = tensorB[:, torch.randperm(tensorB.size()[1])]
 
 		#just takes the first gene window id corresponding to the 
 		#group of 200 and uses it to find the gene id
@@ -69,10 +84,6 @@ class HisModDataset(torch.utils.data.Dataset):
 
 		#Find the log-fold change
 		label = self.getlabel(cA, cB) 
-
-		# if(self.use_lin):
-		# 	tensorA = tensorA.reshape(1, 1000)
-		# 	tensorB = tensorB.reshape(1, 1000)
 
 		return tensorA, tensorB, label[0]
 

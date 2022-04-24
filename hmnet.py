@@ -1,9 +1,32 @@
 import torch
 import torch.nn as nn
+import math
 
-class HMNet(nn.Module):
+#From https://discuss.pytorch.org/t/transformer-example-position-encoding-function-works-only-for-even-d-model/100986 
+class PositionalEncoding(nn.Module):
+
+    def __init__(self, d_model, dropout=0.1, max_len=512):
+        super(PositionalEncoding, self).__init__()
+        self.dropout = nn.Dropout(p=dropout)
+
+        pe = torch.zeros(max_len, d_model)
+        position = torch.arange(0, max_len, dtype=torch.float).unsqueeze(1)
+        div_term = torch.exp(torch.arange(0, d_model, 2).float() * (-math.log(10000.0) / d_model))
+        pe[:, 0::2] = torch.sin(position * div_term)
+        if d_model%2 != 0:
+            pe[:, 1::2] = torch.cos(position * div_term)[:,0:-1]
+        else:
+            pe[:, 1::2] = torch.cos(position * div_term)
+        pe = pe.unsqueeze(0).transpose(0, 1)
+        self.register_buffer('pe', pe)
+
+    def forward(self, x):
+        x = x + self.pe[:x.size(0), :]
+        return self.dropout(x)
+
+class ConvTransNet(nn.Module):
 	def __init__(self):
-		super(HMNet, self).__init__()
+		super(ConvTransNet, self).__init__()
 
 		self.conv_net = nn.Sequential(
 			nn.Conv1d(5, 32, 5), #of histone mods, # of output channels, kernel size
@@ -11,9 +34,11 @@ class HMNet(nn.Module):
 			nn.Conv1d(32, 64, 5),
 			nn.ReLU(0.2),
 			nn.Conv1d(64, 5, 5),
-		)	
+		)
 
-		self.en = nn.TransformerEncoderLayer(5, 5, batch_first = True)
+		self.pos_enc = PositionalEncoding(5)
+
+		self.en = nn.TransformerEncoderLayer(d_model = 5, nhead = 5, batch_first = True)
 		self.encoder = nn.TransformerEncoder(self.en, num_layers = 3)
 		
 		self.fc = nn.Linear(940, 1)
@@ -24,7 +49,43 @@ class HMNet(nn.Module):
 		#net = net.squeeze()
 		#print(net.shape)
 		net = torch.transpose(net, 1, 2)
+		net = self.pos_enc(net)
 		net = self.encoder(net)
+		net = net.squeeze()
+		net = net.reshape(-1, net.shape[0]*net.shape[1])
+		#print(net.shape)
+		net = self.fc(net)
+
+		return net
+
+class TransConvNet(nn.Module):
+	def __init__(self):
+		super(TransConvNet, self).__init__()
+
+		self.conv_net = nn.Sequential(
+			nn.Conv1d(5, 32, 5), #of histone mods, # of output channels, kernel size
+			nn.ReLU(0.2),
+			nn.Conv1d(32, 64, 5),
+			nn.ReLU(0.2),
+			nn.Conv1d(64, 5, 5),
+		)
+
+		self.pos_enc = PositionalEncoding(5)
+
+		self.en = nn.TransformerEncoderLayer(d_model = 5, nhead = 5, batch_first = True)
+		self.encoder = nn.TransformerEncoder(self.en, num_layers = 3)
+		
+		self.fc = nn.Linear(940, 1)
+
+	def forward(self, x):
+		#print(net.shape)
+		#net = net.squeeze()
+		#print(net.shape)
+		net = torch.transpose(x, 1, 2)
+		net = self.pos_enc(net)
+		net = self.encoder(net)
+		net = torch.transpose(net, 1, 2)
+		net = self.conv_net(net)
 		net = net.squeeze()
 		net = net.reshape(-1, net.shape[0]*net.shape[1])
 		#print(net.shape)
@@ -36,13 +97,23 @@ class TransformerNoConv(nn.Module):
 	def __init__(self):
 		super(TransformerNoConv, self).__init__()
 
-		self.en = nn.TransformerEncoderLayer(5, 5, batch_first = True, dropout=0.3)
-		self.encoder = nn.TransformerEncoder(self.en, num_layers = 12)
+		self.pos_enc = PositionalEncoding(d_model = 5)
+
+		self.en = nn.TransformerEncoderLayer(
+			d_model = 5, 
+			nhead = 5, 
+			batch_first = True, 
+			dropout=0.3
+		)
+
+		self.encoder = nn.TransformerEncoder(self.en, num_layers =12)
 
 		self.fc = nn.Linear(1000, 1)
 
 	def forward(self, x):
 		net = torch.transpose(x, 1, 2)
+		net = self.pos_enc(net)
+		#print(net)
 		net = self.en(net)
 		net = net.squeeze()
 		net = net.reshape(-1, net.shape[0]*net.shape[1])
@@ -52,25 +123,24 @@ class TransformerNoConv(nn.Module):
 
 class SimpleConvNet(nn.Module):
 	def __init__(self):
- 		super(SimpleConvNet, self).__init__()
+		super(SimpleConvNet, self).__init__()
 
- 		self.conv_net = nn.Sequential(
- 			nn.Conv1d(5, 5, 5), #of histone mods, # of output channels, kernel size
- 			nn.Conv1d(5, 5, 5)
- 		)
+		self.conv_net = nn.Sequential(
+			nn.Conv1d(5, 5, 5), #of histone mods, # of output channels, kernel size
+			nn.Conv1d(5, 5, 5)
+		)
 
- 		self.fc = nn.Linear(960, 1)
+		self.fc = nn.Linear(960, 1)
 
 	def forward(self, x):
- 		net = self.conv_net(x)
- 		#print(net.shape)
- 		net = net.squeeze()
+		net = self.conv_net(x)
+		#print(net.shape)
+		net = net.squeeze()
+		net = net.reshape(-1, net.shape[0]*net.shape[1])
+		#print(net.shape)
+		net = self.fc(net)
 
- 		net = net.reshape(-1, net.shape[0]*net.shape[1])
- 		#print(net.shape)
- 		net = self.fc(net)
-
- 		return net
+		return net
 
 class BetterConvNet(nn.Module):
 	def __init__(self):
@@ -81,30 +151,27 @@ class BetterConvNet(nn.Module):
 			nn.ReLU(0.2),
 			nn.Conv1d(32, 64, 5),
 			nn.ReLU(0.2),
-			nn.Conv1d(64, 5, 5),
+			nn.Conv1d(64, 128, 5),
+			nn.ReLU(0.2),
+			nn.Conv1d(128, 64, 5), #of histone mods, # of output channels, kernel size
+			nn.ReLU(0.2),
+			nn.Conv1d(64, 32, 5),
+			nn.ReLU(0.2),
+			nn.Conv1d(32, 5, 5),
 		)	
+
+		self.dropout = nn.Dropout(p=0.25)
 		
-		self.fc = nn.Linear(940, 1)
+		self.fc = nn.Linear(880, 1)
 
 	def forward(self, x):
 		net = self.conv_net(x)
 		#print(net.shape)
 		net = net.squeeze()
-		
+		net = self.dropout(net)
 		net = net.reshape(-1, net.shape[0]*net.shape[1])
 		#print(net.shape)
-
 		net = self.fc(net)
 
 		return net
 
-
-#From https://towardsdatascience.com/regression-based-neural-networks-with-tensorflow-v2-0-predicting-average-daily-rates-e20fffa7ac9a
-class LinearRegression(torch.nn.Module):
-    def __init__(self, inputSize=1000, outputSize=1):
-        super(LinearRegression, self).__init__()
-        self.linear = torch.nn.Linear(inputSize, outputSize)
-
-    def forward(self, x):
-        out = self.linear(x)
-        return out
