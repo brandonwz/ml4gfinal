@@ -1,4 +1,4 @@
-from hmnet import ConvTransNet, TransConvNet, BetterConvNet, SimpleConvNet, TransformerNoConv
+from hmnet import ConvTransNet, BetterConvNet, SimpleConvNet, TransformerNoConv
 from data_reader import HisModSingleDataset, HisModDataset
 
 import torch
@@ -15,7 +15,7 @@ import os, sys
 
 import math
 
-TRIAL_NAME = "simple_single_3"
+TRIAL_NAME = "simple_single_4"
 TRIAL_DIR = "./checkpoints/" + TRIAL_NAME
 
 print("====== GPU Info ======")
@@ -210,7 +210,7 @@ if __name__ == '__main__':
 		os.makedirs(TRIAL_DIR)
 
 
-	hmnet = SimpleConvNet()
+	hmnet = SimpleConvNet(use_abs = True)
 	hmnet = hmnet.to(DEVICE)
 
 	TRIAL_SAVE = TRIAL_NAME + "/" + TRIAL_NAME + "_SINGLE"
@@ -243,24 +243,15 @@ if __name__ == '__main__':
 		cellA_expr_file = cell + ".expr.csv"
 		cellA_file = cell + ".test.csv"
 
-		# test_data = HisModSingleDataset(
-		# 	cellA_file, 
-		# 	cellA_expr_file, 
-		# 	MAIN_DIR 
-		# )
-
 		train_datasets.append(train_data)
 		val_datasets.append(val_data)
-		#test_datasets.append(test_data)
 
 
 	train_dataset = torch.utils.data.ConcatDataset(train_datasets)
-	#test_dataset = torch.utils.data.ConcatDataset(test_datasets)
 	val_dataset = torch.utils.data.ConcatDataset(val_datasets)
 
 	train_loader = torch.utils.data.DataLoader(train_dataset, shuffle=True)
 	val_loader = torch.utils.data.DataLoader(val_dataset)
-	#test_loader = torch.utils.data.ConcatDataset(test_dataset)
 
 	print("data loaded!")
 

@@ -1,4 +1,4 @@
-from hmnet import ConvTransNet, TransConvNet, BetterConvNet, SimpleConvNet, TransformerNoConv
+from hmnet import ConvTransNet, BetterConvNet, SimpleConvNet, TransformerNoConv
 from data_reader import HisModDataset
 
 import torch
@@ -192,8 +192,7 @@ if __name__ == '__main__':
 			cellA_expr_file, 
 			cellB_file, 
 			cellB_expr_file, 
-			MAIN_DIR, 
-			ignore_B = False
+			MAIN_DIR
 		)
 		
 		val_data = HisModDataset(
@@ -201,8 +200,7 @@ if __name__ == '__main__':
 			cellA_expr_file, 
 			cellB_val, 
 			cellB_expr_file, 
-			MAIN_DIR, 
-			ignore_B = False
+			MAIN_DIR
 		)
 
 		print("data loaded!")

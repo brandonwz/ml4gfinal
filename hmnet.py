@@ -25,7 +25,7 @@ class PositionalEncoding(nn.Module):
         return self.dropout(x)
 
 class ConvTransNet(nn.Module):
-	def __init__(self):
+	def __init__(self, use_abs = False):
 		super(ConvTransNet, self).__init__()
 
 		self.conv_net = nn.Sequential(
@@ -43,6 +43,8 @@ class ConvTransNet(nn.Module):
 		
 		self.fc = nn.Linear(940, 1)
 
+		self.use_abs = use_abs
+
 	def forward(self, x):
 		net = self.conv_net(x)
 		#print(net.shape)
@@ -56,45 +58,13 @@ class ConvTransNet(nn.Module):
 		#print(net.shape)
 		net = self.fc(net)
 
-		return net
-
-class TransConvNet(nn.Module):
-	def __init__(self):
-		super(TransConvNet, self).__init__()
-
-		self.conv_net = nn.Sequential(
-			nn.Conv1d(5, 32, 5), #of histone mods, # of output channels, kernel size
-			nn.ReLU(0.2),
-			nn.Conv1d(32, 64, 5),
-			nn.ReLU(0.2),
-			nn.Conv1d(64, 5, 5),
-		)
-
-		self.pos_enc = PositionalEncoding(5)
-
-		self.en = nn.TransformerEncoderLayer(d_model = 5, nhead = 5, batch_first = True)
-		self.encoder = nn.TransformerEncoder(self.en, num_layers = 3)
-		
-		self.fc = nn.Linear(940, 1)
-
-	def forward(self, x):
-		#print(net.shape)
-		#net = net.squeeze()
-		#print(net.shape)
-		net = torch.transpose(x, 1, 2)
-		net = self.pos_enc(net)
-		net = self.encoder(net)
-		net = torch.transpose(net, 1, 2)
-		net = self.conv_net(net)
-		net = net.squeeze()
-		net = net.reshape(-1, net.shape[0]*net.shape[1])
-		#print(net.shape)
-		net = self.fc(net)
+		if(self.use_abs):
+			net = torch.abs(net)
 
 		return net
 
 class TransformerNoConv(nn.Module):
-	def __init__(self):
+	def __init__(self, use_abs = False):
 		super(TransformerNoConv, self).__init__()
 
 		self.pos_enc = PositionalEncoding(d_model = 5)
@@ -110,6 +80,8 @@ class TransformerNoConv(nn.Module):
 
 		self.fc = nn.Linear(1000, 1)
 
+		self.use_abs = use_abs
+
 	def forward(self, x):
 		net = torch.transpose(x, 1, 2)
 		net = self.pos_enc(net)
@@ -119,10 +91,13 @@ class TransformerNoConv(nn.Module):
 		net = net.reshape(-1, net.shape[0]*net.shape[1])
 		net = self.fc(net)
 
+		if(self.use_abs):
+			net = torch.abs(net)
+
 		return net
 
 class SimpleConvNet(nn.Module):
-	def __init__(self):
+	def __init__(self, use_abs = False):
 		super(SimpleConvNet, self).__init__()
 
 		self.conv_net = nn.Sequential(
@@ -132,6 +107,8 @@ class SimpleConvNet(nn.Module):
 
 		self.fc = nn.Linear(960, 1)
 
+		self.use_abs = use_abs
+
 	def forward(self, x):
 		net = self.conv_net(x)
 		#print(net.shape)
@@ -139,12 +116,14 @@ class SimpleConvNet(nn.Module):
 		net = net.reshape(-1, net.shape[0]*net.shape[1])
 		#print(net.shape)
 		net = self.fc(net)
-		net = torch.abs(net)
+
+		if(self.use_abs):
+			net = torch.abs(net)
 
 		return net
 
 class BetterConvNet(nn.Module):
-	def __init__(self):
+	def __init__(self, use_abs = False):
 		super(BetterConvNet, self).__init__()
 
 		self.conv_net = nn.Sequential(
@@ -165,6 +144,8 @@ class BetterConvNet(nn.Module):
 		
 		self.fc = nn.Linear(880, 1)
 
+		self.use_abs = use_abs
+
 	def forward(self, x):
 		net = self.conv_net(x)
 		#print(net.shape)
@@ -173,6 +154,9 @@ class BetterConvNet(nn.Module):
 		net = net.reshape(-1, net.shape[0]*net.shape[1])
 		#print(net.shape)
 		net = self.fc(net)
+
+		if(self.use_abs):
+			net = torch.abs(net)
 
 		return net
 
