@@ -139,6 +139,7 @@ class SimpleConvNet(nn.Module):
 		net = net.reshape(-1, net.shape[0]*net.shape[1])
 		#print(net.shape)
 		net = self.fc(net)
+		net = torch.abs(net)
 
 		return net
 
