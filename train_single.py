@@ -15,7 +15,7 @@ import os, sys
 
 import math
 
-TRIAL_NAME = "simple_single_4"
+TRIAL_NAME = "conv_single_fin_6_layers"
 TRIAL_DIR = "./checkpoints/" + TRIAL_NAME
 
 print("====== GPU Info ======")
@@ -34,10 +34,10 @@ def train(
 	train_loader, 
 	val_loader, 
 	checkpoint_name = "", 
-	epoch = 1
+	epoch = 15
 	):
 
-	optim = torch.optim.Adam(hmnet.parameters(), amsgrad=True)
+	optim = torch.optim.Adam(hmnet.parameters(), amsgrad=True, lr = 0.0003)
 
 	checkpoint = "./checkpoints/" + checkpoint_name
 
@@ -210,7 +210,7 @@ if __name__ == '__main__':
 		os.makedirs(TRIAL_DIR)
 
 
-	hmnet = SimpleConvNet(use_abs = True)
+	hmnet = BetterConvNet(use_abs = True)
 	hmnet = hmnet.to(DEVICE)
 
 	TRIAL_SAVE = TRIAL_NAME + "/" + TRIAL_NAME + "_SINGLE"

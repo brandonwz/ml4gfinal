@@ -1,4 +1,4 @@
-from hmnet import ConvTransNet, BetterConvNet, SimpleConvNet, TransformerNoConv
+from hmnet import ConvTransNet, BetterConvNet, BetterConvPoolNet, SimpleConvNet, TransformerNoConv
 from data_reader import HisModDataset
 
 import torch
@@ -13,7 +13,9 @@ import matplotlib.pyplot as plt
 
 import os, sys
 
-TRIAL_NAME = "trans_conv_1"
+from timeit import default_timer
+
+TRIAL_NAME = "trans_6layers_final"
 TRIAL_DIR = "./checkpoints/" + TRIAL_NAME
 
 print("====== GPU Info ======")
@@ -35,7 +37,7 @@ def train(
 	epoch = 10
 	):
 
-	optim = torch.optim.Adam(hmnet.parameters(), amsgrad=True)
+	optim = torch.optim.Adam(hmnet.parameters(), amsgrad=True, lr=0.0003)
 
 	checkpoint = "./checkpoints/" + checkpoint_name
 
@@ -47,6 +49,7 @@ def train(
 	print("train...")
 	c = 0
 	for i in range(epoch):
+		start_time = default_timer()
 		for x1, x2, y in train_loader:
 
 			x1 = x1.to(DEVICE)
@@ -71,7 +74,10 @@ def train(
 			optim.zero_grad()
 
 		mse, r2, _ = eval(val_loader, hmnet)
+
+		epoch_time = default_timer() - start_time
 		print("epoch:", (i+1))
+		print("time taken:", epoch_time)
 		print("val mse:", mse)
 		print("val pcc:", r2)
 
@@ -111,6 +117,8 @@ def eval(test_data, model):
 
 	pred_list = np.array(pred_list)
 	label_list = np.array(label_list)
+
+	print(pred_list[0:10])
 
 	#From https://github.com/QData/DeepDiffChrome
 	R2,p=scipy.stats.pearsonr(label_list, pred_list)
@@ -156,9 +164,9 @@ if __name__ == '__main__':
 
 	simple_conv_pccs = [0.505, 0.555, 0.493, 0.396, 0.170, 0.393, 0.326, 0.278, 0.270, 0.135]
 	conv_trans_pccs = [] #TODO
-	transformer_pccs = [] #TODO
-	better_conv_pccs = [] #TODO
-	single_net_pccs = [] #TODO
+	transformer_pccs = [0.697, 0.680, 0.631, 0.591, 0.462, 0.457, 0.456, 0.424, 0.447, 0.264] #TODO
+	better_conv_pccs = [0.725, 0.711, 0.679, 0.591, 0.488, 0.494, 0.473, 0.475, 0.449, 0.282] #lr=0.0003
+	single_net_pccs = [0.577, 0.532, 0.526, 0.473, 0.360, 0.380, 0.357, 0.220, 0.330, 0.091] #lr=0.0003
 
 	#graph_results(simple_conv_pccs)
 
@@ -182,7 +190,7 @@ if __name__ == '__main__':
 		cellA_val = cell_pair[0] + ".valid.csv"
 		cellB_val = cell_pair[1] + ".valid.csv"
 
-		hmnet = TransConvNet()
+		hmnet = TransformerNoConv()
 		hmnet = hmnet.to(DEVICE)
 
 		print("loading data...")
@@ -232,7 +240,5 @@ if __name__ == '__main__':
 
 		MSE, R2, p = eval(dataloader, hmnet)
 		print("eval on test set: ", MSE, R2, p)
-
-		break
 
 	
