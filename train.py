@@ -37,7 +37,7 @@ def train(
 	epoch = 10
 	):
 
-	optim = torch.optim.Adam(hmnet.parameters(), amsgrad=True, lr=0.0003)
+	optim = torch.optim.Adam(hmnet.parameters(), amsgrad=True)
 
 	checkpoint = "./checkpoints/" + checkpoint_name
 
