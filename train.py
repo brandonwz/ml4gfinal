@@ -15,7 +15,7 @@ import os, sys
 
 from timeit import default_timer
 
-TRIAL_NAME = "trans_6layers_final"
+TRIAL_NAME = "convTransCPU"
 TRIAL_DIR = "./checkpoints/" + TRIAL_NAME
 
 print("====== GPU Info ======")
@@ -190,7 +190,7 @@ if __name__ == '__main__':
 		cellA_val = cell_pair[0] + ".valid.csv"
 		cellB_val = cell_pair[1] + ".valid.csv"
 
-		hmnet = TransformerNoConv()
+		hmnet = ConvTransNet()
 		hmnet = hmnet.to(DEVICE)
 
 		print("loading data...")

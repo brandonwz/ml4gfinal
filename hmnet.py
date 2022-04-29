@@ -30,7 +30,7 @@ class ConvTransNet(nn.Module):
 
 		self.conv_net = nn.Sequential(
 			nn.Conv1d(5, 32, 5), #of histone mods, # of output channels, kernel size
-			nn.LeakyReLU(0.2i),
+			nn.LeakyReLU(0.2),
 			nn.Conv1d(32, 64, 5),
 			nn.LeakyReLU(0.2),
 			nn.Conv1d(64, 5, 5),
@@ -128,17 +128,17 @@ class BetterConvPoolNet(nn.Module):
 
 		self.conv_net = nn.Sequential(
 			nn.Conv1d(5, 32, 5), #of histone mods, # of output channels, kernel size
-			nn.ReLU(0.2),
+			nn.ReLU(),
 			nn.Conv1d(32, 64, 5),
-			nn.ReLU(0.2),
+			nn.ReLU(),
 			nn.MaxPool1d(2),
 			nn.Conv1d(64, 128, 5),
-			nn.ReLU(0.2),
+			nn.ReLU(),
 			nn.Conv1d(128, 64, 5),
-			nn.ReLU(0.2),
+			nn.ReLU(),
 			nn.MaxPool1d(2),
 			nn.Conv1d(64, 32, 5),
-			nn.ReLU(0.2),
+			nn.ReLU(),
 			nn.MaxPool1d(2),
 			nn.Conv1d(32, 5, 5),
 		)	
@@ -168,15 +168,15 @@ class BetterConvNet(nn.Module):
 
 		self.conv_net = nn.Sequential(
 			nn.Conv1d(5, 32, 5), #of histone mods, # of output channels, kernel size
-			nn.ReLU(0.2),
+			nn.ReLU(),
 			nn.Conv1d(32, 64, 5),
-			nn.ReLU(0.2),
+			nn.ReLU(),
 			nn.Conv1d(64, 128, 5),
-			nn.ReLU(0.2),
+			nn.ReLU(),
 			nn.Conv1d(128, 64, 5), #of histone mods, # of output channels, kernel size
-			nn.ReLU(0.2),
+			nn.ReLU(),
 			nn.Conv1d(64, 32, 5),
-			nn.ReLU(0.2),
+			nn.ReLU(),
 			nn.Conv1d(32, 5, 5),
 		)	
 
