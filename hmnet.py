@@ -96,7 +96,7 @@ class BetterConvTranNet(nn.Module):
 		#net = net.dropout(net)
 		net = torch.transpose(net, 1, 2)
 		net = self.pos_enc(net)
-		net = self.encoder(net)
+		net = self.en(net)
 		net = net.squeeze()
 		net = net.reshape(-1, net.shape[0]*net.shape[1])
 		net = self.fc(net)
