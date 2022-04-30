@@ -6,7 +6,7 @@ if __name__ == '__main__':
 	transformer_pccs = [0.697, 0.680, 0.631, 0.591, 0.462, 0.457, 0.456, 0.424, 0.447, 0.264] #TODO
 	better_conv_pccs = [0.725, 0.711, 0.679, 0.591, 0.488, 0.494, 0.473, 0.475, 0.449, 0.282] #lr=0.0003
 	single_net_pccs = [0.577, 0.532, 0.526, 0.473, 0.360, 0.380, 0.357, 0.220, 0.330, 0.091] #lr=0.0003
-	transconv = [0.663, 0.589, 0.585, 0.363, -0.084, 0.379, 0.346, 0.016, 0.310, -0.069]
+	conv_trans = [0.663, 0.589, 0.585, 0.363, -0.084, 0.379, 0.346, 0.016, 0.310, -0.069]
 
 	labels = [
         "E123-E003",
@@ -32,7 +32,7 @@ if __name__ == '__main__':
 	plt.ylabel("Pearson Correlation Coefficient")
 	plt.xlabel("Cell Pairs")
 	plt.ylim(0, 1)
-	plt.title("Our Models' Performances")
+	plt.title("Model Performances")
 	plt.legend()
 	plt.show()
 	
