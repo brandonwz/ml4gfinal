@@ -9,6 +9,8 @@ if __name__ == '__main__':
 	conv_trans = [0.663, 0.589, 0.585, 0.363, -0.084, 0.379, 0.346, 0.016, 0.310, -0.069]
 
 	conv_trans_1enc = [0.658, 0.665, 0.600, 0.341, 0.331, 0.415, 0.391, 0.289, 0.383, 0.132]
+
+	trans_3_layer = [0.633, 0.660, 0.614, 0.270, 0.170, 0.422, 0.389, -0.011, 0.299, 0.206]
 	labels = [
         "E123-E003",
         "E116-E003",
@@ -23,14 +25,15 @@ if __name__ == '__main__':
 	pccs = transformer_pccs
 	ticks = np.arange(10) + 1
 
-	plt.figure()
+	plt.figure(figsize=(8,6))
 	plt.xticks(ticks, labels, rotation = 45)
-	plt.plot(ticks, pccs, linestyle='dashed', marker='o', label = "Transformer")
+	plt.plot(ticks, pccs, linestyle='dashed', marker='o', label = "1-layer Transformer")
 	plt.plot(ticks, simple_conv_pccs, linestyle='dashed', marker='o', label = "Simple CNN")
 	plt.plot(ticks, better_conv_pccs, linestyle='dashed', marker='o', label="6-layer CNN")
 	plt.plot(ticks, single_net_pccs, linestyle='dashed', marker = 'o', label = "SingleNet")
 	plt.plot(ticks, conv_trans, linestyle='dashed', marker = 'o', label = "CNN-Transformer 3 Encoders")
 	plt.plot(ticks, conv_trans_1enc, linestyle='dashed', marker = 'o', label = "CNN-Transformer 1 Encoder")
+	plt.plot(ticks, trans_3_layer, linestyle='dashed', marker = 'o', label = "3-layer Transformer")
 	plt.ylabel("Pearson Correlation Coefficient")
 	plt.xlabel("Cell Pairs")
 	plt.ylim(-0.1, 1)
