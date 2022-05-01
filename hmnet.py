@@ -68,13 +68,18 @@ class BetterConvTranNet(nn.Module):
 		super(BetterConvTranNet, self).__init__()
 
 		self.conv_net = nn.Sequential(
-			nn.Conv1d(5, 32, 16),
+			nn.Conv1d(5, 32, 5),
 			nn.LeakyReLU(0.2),
-			nn.Conv1d(32, 64, 8),
+			nn.Conv1d(32, 64, 5),
 			nn.LeakyReLU(0.2),
-			nn.Conv1d(64, 128, 4),
+			nn.Conv1d(64, 128, 5),
 			nn.LeakyReLU(0.2),
-			nn.Conv1d(128, 5, 1)
+			nn.Conv1d(128, 64, 5),
+			nn.LeakyReLU(0.2),
+			nn.Conv1d(64, 32, 5),
+			nn.LeakyReLU(0.2),
+			nn.Conv1d(32, 5, 5),
+			
 
 		)
 
@@ -84,7 +89,7 @@ class BetterConvTranNet(nn.Module):
 		self.en = nn.TransformerEncoderLayer(d_model = 5, nhead = 5, batch_first = True)
 		self.encoder = nn.TransformerEncoder(self.en, num_layers = 5)
 
-		self.fc = nn.Linear(875, 1)
+		self.fc = nn.Linear(880, 1)
 
 		self.use_abs = use_abs
 
