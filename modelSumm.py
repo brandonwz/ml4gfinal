@@ -4,4 +4,4 @@ from torchinfo import summary
 if __name__ == '__main__':
 	
 	#print(ConvTransNet())
-	summary(BetterConvNet(), input_size = (1, 5, 200))
+	summary(ConvTransNet(), input_size = (1, 5, 200))
