@@ -39,7 +39,7 @@ class ConvTransNet(nn.Module):
 		self.pos_enc = PositionalEncoding(5)
 
 		self.en = nn.TransformerEncoderLayer(d_model = 5, nhead = 5, batch_first = True)
-		self.encoder = nn.TransformerEncoder(self.en, num_layers = 3)
+		self.encoder = nn.TransformerEncoder(self.en, num_layers = 1)
 		
 		self.fc = nn.Linear(940, 1)
 
@@ -126,7 +126,7 @@ class TransformerNoConv(nn.Module):
 			dropout=0.3
 		)
 
-		self.encoder = nn.TransformerEncoder(self.en, num_layers =6)
+		self.encoder = nn.TransformerEncoder(self.en, num_layers = 1)
 
 		self.fc = nn.Linear(1000, 1)
 

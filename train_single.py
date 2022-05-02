@@ -15,7 +15,7 @@ import os, sys
 
 import math
 
-TRIAL_NAME = "conv_single_fin_6_layers"
+TRIAL_NAME = "betterConvTest"
 TRIAL_DIR = "./checkpoints/" + TRIAL_NAME
 
 print("====== GPU Info ======")
@@ -34,7 +34,7 @@ def train(
 	train_loader, 
 	val_loader, 
 	checkpoint_name = "", 
-	epoch = 15
+	epoch = 10
 	):
 
 	optim = torch.optim.Adam(hmnet.parameters(), amsgrad=True, lr = 0.0003)
@@ -72,7 +72,6 @@ def train(
 
 		mse, r2, _ = eval(val_loader, hmnet)
 		print("epoch:", (i+1))
-		print("val mse:", mse)
 		print("val pcc:", r2)
 
 		if(mse < min_val_mse):
@@ -88,6 +87,7 @@ def train(
 
 	return hmnet
 
+#Eval for validation set across all cells
 def eval(test_data, model):
 	torch.set_grad_enabled(False)
 	model.eval()
@@ -100,9 +100,7 @@ def eval(test_data, model):
 		input_mat = x.float()
 
 		pred = model(input_mat)
-		#print(pred)
 		y = y.float()
-		#print(y)
 
 		pred_list.append(pred.squeeze().item())
 		label_list.append(y.squeeze().item())
@@ -129,6 +127,7 @@ def getlabel(c1,c2):
 	log_fold_change=math.log((fold_change),2)
 	return (log_fold_change, label)
 
+#Eval for test set for a cell pair
 def test_eval(test_data, model):
 	torch.set_grad_enabled(False)
 	model.eval()
@@ -140,6 +139,8 @@ def test_eval(test_data, model):
 		y = y.to(DEVICE)
 
 		x1 = x1.float(); x2 = x2.float()
+
+		#Get gene expression predictions
 		pred1 = model(x1); pred2 = model(x2)
 
 		y = y.float()
@@ -147,10 +148,7 @@ def test_eval(test_data, model):
 		pred1 = pred1.squeeze().item()
 		pred2 = pred2.squeeze().item()
 
-		#print("predictions")
-		#print(pred1)
-		#print(pred2)
-
+		#Get log fold change of gene expression predictions
 		pred = getlabel(pred1, pred2)
 
 		pred_list.append(pred[0])
@@ -247,6 +245,7 @@ if __name__ == '__main__':
 		val_datasets.append(val_data)
 
 
+	#Chain all cell data together for train + val set
 	train_dataset = torch.utils.data.ConcatDataset(train_datasets)
 	val_dataset = torch.utils.data.ConcatDataset(val_datasets)
 
@@ -270,6 +269,7 @@ if __name__ == '__main__':
 	["E037", "E038"]
 	]
 
+	#Evaluate test set performancce for each cell pair
 	for cell_pair in cell_pairs:
 		cellA_expr_file = cell_pair[0] + ".expr.csv"
 		cellA_file = cell_pair[0] + ".test.csv"
@@ -287,7 +287,7 @@ if __name__ == '__main__':
 
 		test_loader = torch.utils.data.DataLoader(test_dataset)
 
-		MSE, R2, p = test_eval(test_loader, hmnet)
-		print("eval on test set for cell pair" + str(cell_pair) + ":", MSE, R2, p)
+		_, R2, p = test_eval(test_loader, hmnet)
+		print("eval on test set for cell pair" + str(cell_pair) + ":", R2, p)
 
 	
