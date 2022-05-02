@@ -9,3 +9,5 @@ To interchange between models, change line 189 in ```train.py``` to use the mode
 ```python3 train_single.py``` will do training for SingleNet. Be sure to change the ```TRIAL_NAME``` variable on line 18 to use your desired name so that the model gets saved to the correct folder. 
 
 ```python3 graph.py``` will display our results that were obtained for the paper. 
+
+The folder ProcessedData contains all of the data we used, which was originally from https://github.com/QData/DeepDiffChrome/tree/master/data/ProcessedData. X.expr.csv files contain the gene expression values for cell X, while the X.train.csv and X.valid.csv files contain cell X's histone modification counts for the training and validation gene sequences, respectively.  
